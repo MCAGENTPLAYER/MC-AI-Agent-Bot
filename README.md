@@ -57,13 +57,28 @@
 | 环境识别 | `scan_environment` `scan_recipes` `identify` |
 | 社交 | `say` `ask` `need` |
 
-## 构建
+## 从源码构建
+
+### 1. 准备依赖
+
+仓库不包含 Baritone 的 JAR 文件，构建前需手动下载放入对应目录：
+
+| 文件 | 来源 | 放入路径 |
+|------|------|---------|
+| `baritone-1.10.3.jar` | [Baritone CurseForge](https://www.curseforge.com/minecraft/mc-mods/baritone/files) 或 [GitHub Releases](https://github.com/cabaletta/baritone/releases) | `lib/` |
+| `baritoneapi.jar` | 同上（解压 Baritone JAR 或从 API 模块获取） | `libs/` |
+
+> 如果不打算构建，直接使用 `ai_bot-*-all.jar`（胖包）则不需要这些文件，只需将 JAR 放入 `mods` 文件夹。
+
+### 2. 构建
 
 ```bash
 ./gradlew build
 ```
 
-构建产物在 `build/libs/ai_bot-<version>.jar`（普通包）和 `build/libs/ai_bot-<version>-all.jar`（含依赖的胖包）。
+构建产物：
+- `build/libs/ai_bot-<version>.jar` — 普通包，需 Baritone JAR 在运行环境
+- `build/libs/ai_bot-<version>-all.jar` — **推荐**，含所有依赖的胖包，直接放入 `mods` 即可使用
 
 ## 开源说明
 
