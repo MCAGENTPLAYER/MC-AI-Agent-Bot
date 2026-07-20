@@ -1,0 +1,9 @@
+{
+    "name": "!myharvest",
+    "description": "示例自定义收菜脚本",
+    "steps": [
+        { "type": "say", "message": "开始收菜！" },
+        { "type": "harvest", "range": 40 },
+        { "type": "say", "message": "收完了！" }
+    ]
+}

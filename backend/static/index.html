@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 机器人控制台</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e1b4b;
+            --darker: #0f172a;
+            --card: #1e293b;
+            --border: #334155;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .status-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .status-online {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        .status-offline {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #94a3b8;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        .emotion-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .emotion-item {
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .emotion-label {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .emotion-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .emotion-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .emotion-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .emotion-fill.hunger { background: linear-gradient(90deg, #f97316, #ef4444); }
+        .emotion-fill.tiredness { background: linear-gradient(90deg, #8b5cf6, #6366f1); }
+        .emotion-fill.happiness { background: linear-gradient(90deg, #10b981, #06b6d4); }
+        .emotion-fill.boredom { background: linear-gradient(90deg, #f59e0b, #f97316); }
+        .emotion-fill.fear { background: linear-gradient(90deg, #dc2626, #991b1b); }
+
+        .personality-ring {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .ring-item {
+            text-align: center;
+        }
+
+        .ring-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: conic-gradient(var(--primary) var(--percent), rgba(255,255,255,0.1) 0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            --percent: 50%;
+        }
+
+        .ring-inner {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: #e2e8f0;
+        }
+
+        .ring-label {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            font-size: 14px;
+            color: #e2e8f0;
+        }
+
+        .inventory-list {
+            max-height: 200px;
+            overflow-y: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .inventory-item {
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            font-size: 12px;
+            color: #cbd5e1;
+        }
+
+        .chat-container {
+            height: 300px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .chat-message {
+            margin-bottom: 12px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-message.user .chat-content {
+            background: var(--primary);
+            border-radius: 12px 12px 0 12px;
+        }
+
+        .chat-message.ai .chat-content {
+            background: rgba(99, 102, 241, 0.2);
+            border-radius: 12px 12px 12px 0;
+        }
+
+        .chat-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .chat-avatar.user {
+            background: #3b82f6;
+        }
+
+        .chat-avatar.ai {
+            background: #8b5cf6;
+        }
+
+        .chat-content {
+            padding: 10px 15px;
+            max-width: 80%;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .chat-time {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .memory-list {
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .memory-item {
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 3px solid var(--primary);
+        }
+
+        .memory-content {
+            font-size: 13px;
+            color: #cbd5e1;
+            margin-bottom: 4px;
+        }
+
+        .memory-meta {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .metric-card {
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scrollbar::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 3px;
+        }
+
+        .scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.5);
+            border-radius: 3px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid var(--border);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #cbd5e1;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .form-hint {
+            margin-top: 6px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <div class="logo">🤖</div>
+                <div>
+                    <h1>AI 机器人控制台</h1>
+                    <p style="color: #64748b; font-size: 14px;">Minecraft AI 陪玩监控面板</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="btn btn-primary" onclick="openSettings()">⚙️ 设置</button>
+                <span class="status-badge status-offline" id="statusBadge">Offline</span>
+            </div>
+        </header>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-value" id="metricChats">0</div>
+                <div class="metric-label">总对话数</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="metricMemory">0</div>
+                <div class="metric-label">记忆数量</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="metricUptime">00:00:00</div>
+                <div class="metric-label">运行时长</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="metricConnections">0</div>
+                <div class="metric-label">连接数</div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-title">情绪状态</div>
+                <div class="emotion-grid">
+                    <div class="emotion-item">
+                        <div class="emotion-label">
+                            <span>饥饿</span>
+                            <span class="emotion-value" id="emotionHunger">50</span>
+                        </div>
+                        <div class="emotion-bar">
+                            <div class="emotion-fill hunger" id="barHunger" style="width: 50%"></div>
+                        </div>
+                    </div>
+                    <div class="emotion-item">
+                        <div class="emotion-label">
+                            <span>疲劳</span>
+                            <span class="emotion-value" id="emotionTiredness">50</span>
+                        </div>
+                        <div class="emotion-bar">
+                            <div class="emotion-fill tiredness" id="barTiredness" style="width: 50%"></div>
+                        </div>
+                    </div>
+                    <div class="emotion-item">
+                        <div class="emotion-label">
+                            <span>快乐</span>
+                            <span class="emotion-value" id="emotionHappiness">50</span>
+                        </div>
+                        <div class="emotion-bar">
+                            <div class="emotion-fill happiness" id="barHappiness" style="width: 50%"></div>
+                        </div>
+                    </div>
+                    <div class="emotion-item">
+                        <div class="emotion-label">
+                            <span>无聊</span>
+                            <span class="emotion-value" id="emotionBoredom">50</span>
+                        </div>
+                        <div class="emotion-bar">
+                            <div class="emotion-fill boredom" id="barBoredom" style="width: 50%"></div>
+                        </div>
+                    </div>
+                    <div class="emotion-item">
+                        <div class="emotion-label">
+                            <span>恐惧</span>
+                            <span class="emotion-value" id="emotionFear">50</span>
+                        </div>
+                        <div class="emotion-bar">
+                            <div class="emotion-fill fear" id="barFear" style="width: 50%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">性格特征</div>
+                <div class="personality-ring">
+                    <div class="ring-item">
+                        <div class="ring-circle" style="--percent: 50%" id="ringDiligence">
+                            <div class="ring-inner">50%</div>
+                        </div>
+                        <div class="ring-label">勤奋</div>
+                    </div>
+                    <div class="ring-item">
+                        <div class="ring-circle" style="--percent: 50%" id="ringBravery">
+                            <div class="ring-inner">50%</div>
+                        </div>
+                        <div class="ring-label">勇敢</div>
+                    </div>
+                    <div class="ring-item">
+                        <div class="ring-circle" style="--percent: 50%" id="ringTalkativeness">
+                            <div class="ring-inner">50%</div>
+                        </div>
+                        <div class="ring-label">话痨</div>
+                    </div>
+                    <div class="ring-item">
+                        <div class="ring-circle" style="--percent: 50%" id="ringOptimism">
+                            <div class="ring-inner">50%</div>
+                        </div>
+                        <div class="ring-label">乐观</div>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 20px; color: #94a3b8; font-size: 14px;" id="personalityText">
+                    正在成长中...
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">游戏状态</div>
+                <div class="stat-row">
+                    <span class="stat-label">维度</span>
+                    <span class="stat-value" id="gameDimension">未知</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">坐标</span>
+                    <span class="stat-value" id="gamePosition">[0, 64, 0]</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">生命值</span>
+                    <span class="stat-value" id="gameHealth">20.0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">饥饿值</span>
+                    <span class="stat-value" id="gameHunger">20</span>
+                </div>
+                <div style="margin-top: 15px;">
+                    <div class="stat-label" style="margin-bottom: 10px;">物品栏</div>
+                    <div class="inventory-list scrollbar" id="gameInventory">
+                        <span style="color: #64748b;">空</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="grid-column: span 2;">
+                <div class="card-title">聊天记录</div>
+                <div class="chat-container scrollbar" id="chatContainer">
+                    <div style="text-align: center; color: #64748b; padding: 40px;">
+                        暂无聊天记录。<br>在 Minecraft 中开始对话吧！
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">最近记忆</div>
+                <div class="memory-list scrollbar" id="memoryList">
+                    <div style="text-align: center; color: #64748b; padding: 30px;">
+                        暂无记忆记录。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 设置模态框 -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">⚙️ 系统设置</h2>
+                <button class="modal-close" onclick="closeSettings()">&times;</button>
+            </div>
+            <div id="settingsAlert"></div>
+            <form onsubmit="saveSettings(event)">
+                <div class="form-group">
+                    <label class="form-label">API 密钥</label>
+                    <input type="password" class="form-input" id="apiKey" placeholder="sk-xxxxx">
+                    <div class="form-hint">DeepSeek API 密钥，从 <a href="https://platform.deepseek.com" target="_blank" style="color: var(--primary);">platform.deepseek.com</a> 获取</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">API 地址</label>
+                    <input type="text" class="form-input" id="apiUrl" placeholder="https://api.deepseek.com">
+                    <div class="form-hint">API 服务器地址，通常不需要修改</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">模型名称</label>
+                    <input type="text" class="form-input" id="apiModel" placeholder="deepseek-chat">
+                    <div class="form-hint">AI 模型名称，默认 deepseek-chat</div>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="closeSettings()" style="flex: 1;">取消</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 2;">保存配置</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+        const WS_URL = API_URL.replace('http', 'ws') + '/ws';
+
+        let ws;
+        let startTime = Date.now();
+        let totalChats = 0;
+        let memoryCount = 0;
+
+        function connectWebSocket() {
+            ws = new WebSocket(WS_URL);
+
+            ws.onopen = () => {
+                updateStatus(true);
+                fetchStatus();
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'pong') return;
+                    handleMessage(data);
+                } catch (e) {
+                    console.error('Failed to parse message:', e);
+                }
+            };
+
+            ws.onclose = () => {
+                updateStatus(false);
+                setTimeout(connectWebSocket, 3000);
+            };
+
+            ws.onerror = () => {
+                updateStatus(false);
+            };
+        }
+
+        function updateStatus(isOnline) {
+            const badge = document.getElementById('statusBadge');
+            badge.className = `status-badge ${isOnline ? 'status-online' : 'status-offline'}`;
+            badge.textContent = isOnline ? '在线' : '离线';
+            document.getElementById('metricConnections').textContent = isOnline ? '1' : '0';
+        }
+
+        function fetchStatus() {
+            fetch(`${API_URL}/api/status`)
+                .then(res => res.json())
+                .then(data => {
+                    totalChats = data.history_count || 0;
+                    memoryCount = data.memory_count || 0;
+                    updateMetrics();
+                });
+
+            fetch(`${API_URL}/api/memory/recent?limit=5`)
+                .then(res => res.json())
+                .then(updateMemoryList);
+        }
+
+        function updateMetrics() {
+            document.getElementById('metricChats').textContent = totalChats;
+            document.getElementById('metricMemory').textContent = memoryCount;
+            document.getElementById('metricUptime').textContent = formatUptime();
+        }
+
+        function formatUptime() {
+            const diff = Date.now() - startTime;
+            const hours = Math.floor(diff / 3600000);
+            const minutes = Math.floor((diff % 3600000) / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function handleMessage(data) {
+            if (data.reply) {
+                addChatMessage('ai', data.reply);
+                totalChats++;
+                updateMetrics();
+            }
+
+            if (data.game_state) {
+                updateGameState(data.game_state);
+            }
+
+            if (data.emotion) {
+                updateEmotion(data.emotion);
+            }
+
+            if (data.personality) {
+                updatePersonality(data.personality);
+            }
+        }
+
+        function addChatMessage(sender, text) {
+            const container = document.getElementById('chatContainer');
+            const div = document.createElement('div');
+            div.className = `chat-message ${sender}`;
+            div.innerHTML = `
+                <div class="chat-avatar ${sender}">${sender === 'user' ? 'U' : 'AI'}</div>
+                <div>
+                    <div class="chat-content">${escapeHtml(text)}</div>
+                    <div class="chat-time">${new Date().toLocaleTimeString()}</div>
+                </div>
+            `;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function updateGameState(state) {
+            document.getElementById('gameDimension').textContent = state.dimension || '未知';
+            document.getElementById('gamePosition').textContent = `[${Math.round(state.x || 0)}, ${Math.round(state.y || 64)}, ${Math.round(state.z || 0)}]`;
+            document.getElementById('gameHealth').textContent = state.health || '20.0';
+            document.getElementById('gameHunger').textContent = state.hunger || '20';
+
+            const inventory = document.getElementById('gameInventory');
+            if (state.inventory && state.inventory.length > 0) {
+                inventory.innerHTML = state.inventory.map(item => 
+                    `<span class="inventory-item">${item}</span>`
+                ).join('');
+            } else {
+                inventory.innerHTML = '<span style="color: #64748b;">空</span>';
+            }
+        }
+
+        function updateEmotion(emotion) {
+            setEmotion('Hunger', emotion.hunger);
+            setEmotion('Tiredness', emotion.tiredness);
+            setEmotion('Happiness', emotion.happiness);
+            setEmotion('Boredom', emotion.boredom);
+            setEmotion('Fear', emotion.fear);
+        }
+
+        function setEmotion(name, value) {
+            const val = Math.max(0, Math.min(100, value));
+            document.getElementById(`emotion${name}`).textContent = val;
+            document.getElementById(`bar${name}`).style.width = `${val}%`;
+        }
+
+        function updatePersonality(personality) {
+            setRing('Diligence', personality.diligence);
+            setRing('Bravery', personality.bravery);
+            setRing('Talkativeness', personality.talkativeness);
+            setRing('Optimism', personality.optimism);
+
+            const traits = [];
+            if (personality.diligence > 0.7) traits.push('勤奋');
+            else if (personality.diligence < 0.3) traits.push('懒惰');
+            
+            if (personality.bravery > 0.7) traits.push('勇敢');
+            else if (personality.bravery < 0.3) traits.push('胆小');
+            
+            if (personality.talkativeness > 0.7) traits.push('话痨');
+            else if (personality.talkativeness < 0.3) traits.push('内向');
+            
+            if (personality.optimism > 0.7) traits.push('乐观');
+            else if (personality.optimism < 0.3) traits.push('悲观');
+
+            document.getElementById('personalityText').textContent = traits.length > 0 ? traits.join('、') : '正在成长中...';
+        }
+
+        function setRing(name, value) {
+            const percent = Math.round((value || 0.5) * 100);
+            const ring = document.getElementById(`ring${name}`);
+            ring.style.setProperty('--percent', `${percent}%`);
+            ring.querySelector('.ring-inner').textContent = `${percent}%`;
+        }
+
+        function updateMemoryList(memories) {
+            const container = document.getElementById('memoryList');
+            if (memories && memories.length > 0) {
+                container.innerHTML = memories.map(m => `
+                    <div class="memory-item">
+                        <div class="memory-content">${escapeHtml(m.content)}</div>
+                        <div class="memory-meta">
+                            ${m.location ? `${m.location} · ` : ''}${formatTime(m.timestamp)}
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<div style="text-align: center; color: #64748b; padding: 30px;">暂无记忆记录。</div>';
+            }
+        }
+
+        function formatTime(timestamp) {
+            const diff = Date.now() - timestamp * 1000;
+            if (diff < 60000) return '刚刚';
+            if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`;
+            if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`;
+            return `${Math.floor(diff / 86400000)}天前`;
+        }
+
+        function openSettings() {
+            fetch(`${API_URL}/api/settings`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('apiUrl').value = data.ai_api_url || '';
+                    document.getElementById('apiModel').value = data.ai_model || '';
+                    document.getElementById('apiKey').value = '';
+                    
+                    const alert = document.getElementById('settingsAlert');
+                    if (!data.api_key_configured) {
+                        alert.innerHTML = '<div class="alert alert-warning">⚠️ API 密钥尚未配置，请填写后保存</div>';
+                    } else {
+                        alert.innerHTML = '<div class="alert alert-success">✓ API 密钥已配置</div>';
+                    }
+                    
+                    document.getElementById('settingsModal').classList.add('show');
+                })
+                .catch(err => {
+                    console.error('Failed to load settings:', err);
+                    document.getElementById('settingsModal').classList.add('show');
+                });
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('show');
+        }
+
+        function saveSettings(event) {
+            event.preventDefault();
+            
+            const data = {
+                ai_api_key: document.getElementById('apiKey').value.trim(),
+                ai_api_url: document.getElementById('apiUrl').value.trim(),
+                ai_model: document.getElementById('apiModel').value.trim()
+            };
+
+            const alert = document.getElementById('settingsAlert');
+            alert.innerHTML = '<div class="alert alert-warning">正在保存...</div>';
+
+            fetch(`${API_URL}/api/settings`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(result => {
+                alert.innerHTML = '<div class="alert alert-success">✓ 配置已保存！</div>';
+                setTimeout(() => {
+                    closeSettings();
+                    fetchStatus();
+                }, 1500);
+            })
+            .catch(err => {
+                alert.innerHTML = '<div class="alert alert-error">✗ 保存失败: ' + err.message + '</div>';
+            });
+        }
+
+        setInterval(updateMetrics, 1000);
+        connectWebSocket();
+    </script>
+</body>
+</html>

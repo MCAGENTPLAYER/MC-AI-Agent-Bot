@@ -1,0 +1,45 @@
+# eclipse
+bin
+*.launch
+.settings
+.metadata
+.classpath
+.project
+
+# idea
+out
+*.ipr
+*.iws
+*.iml
+.idea
+
+# gradle
+build
+.gradle
+
+# other
+eclipse
+run
+
+# Files from Forge MDK
+forge*changelog.txt
+
+# sensitive
+backend/.env
+
+# python cache
+__pycache__/
+*.pyc
+
+# compiled binary
+backend/dist/
+
+# external deps (provide install instructions instead)
+lib/
+libs/
+
+# zip
+*.zip
+
+# external API classes (copied from mod SDK)
+top/

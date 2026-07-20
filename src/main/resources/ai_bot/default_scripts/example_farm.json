@@ -1,0 +1,9 @@
+{
+    "name": "!myfarm",
+    "description": "示例自定义种地脚本",
+    "steps": [
+        { "type": "say", "message": "开始种地了！" },
+        { "type": "farm", "range": 30 },
+        { "type": "say", "message": "种完了！" }
+    ]
+}
