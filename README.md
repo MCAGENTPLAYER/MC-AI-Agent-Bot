@@ -19,7 +19,6 @@
 | 依赖 | 版本 | 说明 |
 |------|------|------|
 | [Minecraft Forge](https://files.minecraftforge.net/net/minecraftforge/forge/index_1.20.1.html) | 47.4.20+ | 必需 |
-| [Baritone](https://www.curseforge.com/minecraft/mc-mods/baritone) | 1.10.3 | **可选**，提供寻路能力。需下载 JAR 放入 `mods` 文件夹 |
 
 ### 模组兼容性
 
@@ -59,18 +58,7 @@
 
 ## 从源码构建
 
-### 1. 准备依赖
-
-仓库不包含 Baritone 的 JAR 文件，构建前需手动下载放入对应目录：
-
-| 文件 | 来源 | 放入路径 |
-|------|------|---------|
-| `baritone-1.10.3.jar` | [Baritone CurseForge](https://www.curseforge.com/minecraft/mc-mods/baritone/files) 或 [GitHub Releases](https://github.com/cabaletta/baritone/releases) | `lib/` |
-| `baritoneapi.jar` | 同上（解压 Baritone JAR 或从 API 模块获取） | `libs/` |
-
-> 如果不打算构建，直接使用 `ai_bot-*-all.jar`（胖包）则不需要这些文件，只需将 JAR 放入 `mods` 文件夹。
-
-### 2. 构建
+### 1. 构建
 
 ```bash
 ./gradlew build
