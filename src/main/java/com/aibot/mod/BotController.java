@@ -273,46 +273,48 @@ public class BotController {
                     return ToolResult.success("已传送至玩家身边");
                 }));
 
-        // === 意愿判断工具（动态性格系统） ===
-        tools.put("judge_willingness", toolDef("judge_willingness",
-                "判断你是否愿意执行某个任务。基于当前的情绪、性格、疲劳度综合判断。返回是否愿意、理由和热情度。",
-                Map.of(
-                    "task_type", "任务类型：physical_work(体力劳动), combat(战斗), social(社交), rest(休息)",
-                    "task_name", "任务名称，如'砍树'、'挖矿'、'打猎'等"
-                ),
-                args -> {
-                    if (args.length < 1) return ToolResult.error("需要任务类型参数");
-                    String taskType = args[0].toLowerCase();
-                    String taskName = args.length > 1 ? args[1] : "未知任务";
-                    
-                    com.aibot.mod.mind.Willingness.Decision decision;
-                    
-                    switch (taskType) {
-                        case "physical_work":
-                            decision = com.aibot.mod.mind.Willingness.judgePhysicalWork(emotion, personality, taskName);
-                            break;
-                        case "combat":
-                            decision = com.aibot.mod.mind.Willingness.judgeCombat(emotion, personality);
-                            break;
-                        case "social":
-                            decision = com.aibot.mod.mind.Willingness.judgeSocial(emotion, personality);
-                            break;
-                        case "rest":
-                            decision = com.aibot.mod.mind.Willingness.judgeRest(emotion, personality);
-                            break;
-                        default:
-                            return ToolResult.error("未知任务类型，可用：physical_work, combat, social, rest");
-                    }
-                    
-                    String result = String.format(
-                        "意愿判断结果：\n- 是否愿意：%s\n- 理由：%s\n- 热情度：%.0f%%",
-                        decision.willing ? "愿意" : "不愿意",
-                        decision.reason,
-                        decision.enthusiasm * 100
-                    );
-                    
-                    return ToolResult.success(result);
-                }));
+        // === 意愿判断工具（动态性格系统）=== 仅外接模式可用
+        if ("remote".equalsIgnoreCase(Config.getAiMode())) {
+            tools.put("judge_willingness", toolDef("judge_willingness",
+                    "判断你是否愿意执行某个任务。基于当前的情绪、性格、疲劳度综合判断。返回是否愿意、理由和热情度。",
+                    Map.of(
+                        "task_type", "任务类型：physical_work(体力劳动), combat(战斗), social(社交), rest(休息)",
+                        "task_name", "任务名称，如'砍树'、'挖矿'、'打猎'等"
+                    ),
+                    args -> {
+                        if (args.length < 1) return ToolResult.error("需要任务类型参数");
+                        String taskType = args[0].toLowerCase();
+                        String taskName = args.length > 1 ? args[1] : "未知任务";
+                        
+                        com.aibot.mod.mind.Willingness.Decision decision;
+                        
+                        switch (taskType) {
+                            case "physical_work":
+                                decision = com.aibot.mod.mind.Willingness.judgePhysicalWork(emotion, personality, taskName);
+                                break;
+                            case "combat":
+                                decision = com.aibot.mod.mind.Willingness.judgeCombat(emotion, personality);
+                                break;
+                            case "social":
+                                decision = com.aibot.mod.mind.Willingness.judgeSocial(emotion, personality);
+                                break;
+                            case "rest":
+                                decision = com.aibot.mod.mind.Willingness.judgeRest(emotion, personality);
+                                break;
+                            default:
+                                return ToolResult.error("未知任务类型，可用：physical_work, combat, social, rest");
+                        }
+                        
+                        String result = String.format(
+                            "意愿判断结果：\n- 是否愿意：%s\n- 理由：%s\n- 热情度：%.0f%%",
+                            decision.willing ? "愿意" : "不愿意",
+                            decision.reason,
+                            decision.enthusiasm * 100
+                        );
+                        
+                        return ToolResult.success(result);
+                    }));
+        }
 
         // === 任务链系统（核心） ===
         tools.put("plan_tasks", toolDef("plan_tasks",
